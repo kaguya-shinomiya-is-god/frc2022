@@ -20,6 +20,8 @@ public class Robot extends TimedRobot {
   private double mL = 0,mR = 0;
   private double x1,y1,x2,y2;
   private boolean analogic1, analogic2;
+  private double trigger1;
+  private boolean triggerBo;
 
   VictorSPX m_direita1 = new VictorSPX(1);
   VictorSPX m_direita2 = new VictorSPX(2);
@@ -44,39 +46,66 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    // Atribuição de valores as variaveis
     x1 = joystick1.getRawAxis(0);
     y1 = - joystick1.getRawAxis(1);
     x2 = joystick1.getRawAxis(4);
     y2 = - joystick1.getRawAxis(5);
     pov = joystick1.getPOV();
+    trigger1 = joystick1.getThrottle();
 
+    // Calculo das magnitudes
     mag = Math.hypot(x1, y1);
     mag2 = Math.hypot(x2, y2);
 
-    buttonSe();
-      SmartDashboard.putNumber("Velocidade", spd);
+    // Verificação do uso de botões
+    buttonSe(joystick1.getRawButton(3), joystick1.getRawButton(1), joystick1.getRawButton(2));
 
-    resetAxis();
+    // Verificação dos analogicos
     analogicVer();
-      SmartDashboard.putBoolean("Analogico 1", analogic1);
-      SmartDashboard.putBoolean("Analogico 2", analogic2);
-
+    // Reiniciação dos valores insignificantes
+    resetAxis();
+    // Calculo do POV
     povCalc(pov);
+      
+      // Exibição dos valores na simulação
+      SmartDashboard.putNumber("Velocidade", spd);
+      SmartDashboard.putNumber("Trigger",trigger1);
+      SmartDashboard.putNumber("ForcaMotor Esquerdo", (triggerBo) ? minMethod(mL) * trigger1 : minMethod(mL));
+      SmartDashboard.putNumber("ForçaMotor Direito", (triggerBo) ? minMethod(mR) * trigger1 : minMethod(mR));
+      SmartDashboard.putNumber("Magnitude Esquerda", mag);
+      SmartDashboard.putNumber("Magnitude Direita", mag2);
+      SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
 
-      SmartDashboard.putNumber("ForcaMotor Esquerdo", minMotor(mL));
-      SmartDashboard.putNumber("ForçaMotor Direito", minMotor(mR));
+  }
+
+  private String analogicGate(boolean a, boolean b){
+    
+    if(a) return "Esquerdo"; // Verificação do uso do analogico esquerdo
+
+    else if(b) return "Direito"; // Verificação do uso do analogico direito
+
+    else return "Nenhum"; // Verificação da inutilização dos dois lados
+
   }
 
   private void resetAxis() {
+
     // Verificação de inatividade dos analogicos
     if(mag < 0.1){
       x1 = 0;
       y1 = 0;
       mag = 0;
-    }else if(mag2 < 0.1){
+    }
+    if(mag2 < 0.1){
       x2 = 0;
       y2 = 0;
       mag2 = 0;
+    }
+    // Verificação da inatividade de ambos analogicos
+    if(mag < 0.1 && mag2 < 0.1){
+      mL = 0;
+      mR = 0;
     }
 
   }
@@ -107,6 +136,7 @@ public class Robot extends TimedRobot {
 }
 
   public void povCalc(int pov){
+    // Calculo do POV
     switch(pov){
 
       case 0:
@@ -155,17 +185,24 @@ public class Robot extends TimedRobot {
   }
 
   private void analogicVer(){
-    if(mag != 0){
+
+    //Verificação do analogico esquerdo
+    if(minMethod(mag) != 0){
       analogic1 = true;
       analogic2 = false;
       quadCalc(y1, x1);
     } 
 
-    else if(mag2!=0){
+    else if(minMethod(mag2)!=0){
       reverseQuadCalc(); 
       analogic1 = false;
       analogic2 = true;
-  }
+    }
+
+    else{
+      analogic1 = false;
+      analogic2 = false;
+    }
 }
 
   private void reverseQuadCalc() {
@@ -189,26 +226,28 @@ public class Robot extends TimedRobot {
       }
   }
 
-  private double buttonSe(){
-    if(joystick1.getRawButton(3))
+  private double buttonSe(boolean x,boolean a, boolean b){
+    
+    if (x)
       spd = 1;
 
-    else if(joystick1.getRawButton(1))
+    else if(a)
       spd = 0.5;
 
-    else if(joystick1.getRawButton(2))
+    else if(b)
       spd = 0.25;
 
-        return spd;
+    else triggerBo = true;
+
+      return spd;
   }
 
-  private double minMotor(double motor){
+  private double minMethod(double motor){
 
-    if(Math.abs(motor) < 0.04) return 0;
+    if(Math.abs(motor) < 0.07) return 0;
 
     else return motor;
     
     }
 
-
-}
+  }
