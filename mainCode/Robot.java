@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Trigger Esquerdo", -lt);
       SmartDashboard.putNumber("Trigger Direito", rt);
       SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
-      SmartDashboard.putString("Trigger ativo", triggerGate(rt,lt));
+      SmartDashboard.putString("Trigger ativo", triggerGate(lt,rt));
 
   }
 
