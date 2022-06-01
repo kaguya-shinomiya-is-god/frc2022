@@ -21,6 +21,7 @@ public class Robot extends TimedRobot {
   private double x1,y1,x2,y2;
   private boolean analogic1, analogic2;
   private double rt, lt;
+  private boolean a,b,x;
 
   VictorSPX m_direita1 = new VictorSPX(1);
   VictorSPX m_direita2 = new VictorSPX(2);
@@ -53,16 +54,20 @@ public class Robot extends TimedRobot {
     pov = joystick1.getPOV();
     rt = joystick1.getRawAxis(3);
     lt = - joystick1.getRawAxis(2);
+    a = joystick1.getRawButton(2);
+    b = joystick1.getRawButton(3);
+    x = joystick1.getRawButton(1);
 
     // Calculo das magnitudes
     mag = Math.hypot(x1, y1);
     mag2 = Math.hypot(x2, y2);
 
     // Verificação do uso de botões
-    buttonSe(joystick1.getRawButton(3), joystick1.getRawButton(1), joystick1.getRawButton(2));
-
-    // Verificação dos analogicos e triggers
+    buttonSe(a,b,x);
+    // Verificação dos analogicos
     analogicVer();
+    // Calculo dos triggers
+    triggerCalc(rt,lt,x1);
     // Reiniciação dos valores insignificantes
     resetAxis();
     // Calculo do POV
@@ -118,7 +123,7 @@ public class Robot extends TimedRobot {
       mag2 = 0;
     }
     // Verificação da inatividade de ambos analogicos
-    if(mag < 0.1 && mag2 < 0.1){
+    if(mag < 0.1 && mag2 < 0.1 && lt == 0 && rt == 0){
       mL = 0;
       mR = 0;
     }
@@ -128,19 +133,19 @@ public class Robot extends TimedRobot {
   public void triggerCalc(double rt,double lt,double x){
     if(rt != 0){
       if(x >= 0){
-        mL = rt;
-        mR = rt * (1 - x);
+        mL = rt * spd;
+        mR = rt * (1 - x) * spd;
       }else if(x < 0){
-        mL = rt * (1 + x);
-        mR = rt;
+        mL = rt * (1 + x) * spd;
+        mR = rt * spd;
       }
     }else if(lt != 0){
       if(x >= 0){
-        mL = lt * (x-1);
-        mR = lt;
+        mL = lt * (x-1) * spd;
+        mR = lt * spd;
       }else if(x < 0){
-        mL = lt * (x + 1);
-        mR = lt;
+        mL = lt * (x + 1) * spd;
+        mR = lt * spd;
       }
     }
   }
@@ -222,20 +227,18 @@ public class Robot extends TimedRobot {
   private void analogicVer(){
 
     //Verificação do analogico esquerdo
-    if(minMethod(mag) != 0){
+    if(mag != 0){
       analogic1 = true;
       analogic2 = false;
       // Calculo dos quadrantes
       quadCalc(y1, x1);
       // Calculo dos triggers
-      //triggerCalc(rt,lt,x1);
     } 
 
-    else if(minMethod(mag2)!=0){
+    else if(mag2!=0){
       // Calculo dos quadrantes
-      reverseQuadCalc(); 
+      reverseQuadCalc(x2,y2); 
       // Calculo dos triggers
-      //triggerCalc(rt,lt,x2);
       analogic1 = false;
       analogic2 = true;
     }
@@ -246,22 +249,22 @@ public class Robot extends TimedRobot {
     }
 }
 
-  private void reverseQuadCalc() {
-      seno2 = y2 / mag2;
+  private void reverseQuadCalc(double x, double y) {
+      seno2 = y / mag2;
         // Quadrante 1  
-      if(y2 >= 0 && x2 >= 0){
+      if(y >= 0 && x >= 0){
         mR = - mag2 * spd;
         mL = - seno2 * mag2 * spd;
         // Quadrante 2
-      }else if(y2 >= 0 && x2 < 0){
+      }else if(y >= 0 && x < 0){
         mR = - seno2 * mag2 * spd;
         mL = - mag2 * spd;
         // Quadrante 3
-      }else if(y2 < 0 && x2 < 0){
+      }else if(y < 0 && x < 0){
         mR = mag2 * spd;
         mL = - seno2 * mag2 * spd;
         // Quadrante 4
-      }else if(y2 < 0 && x2 >= 0){
+      }else if(y < 0 && x >= 0){
         mR = - seno2 * mag2 * spd;
         mL = mag2 * spd;
       }
