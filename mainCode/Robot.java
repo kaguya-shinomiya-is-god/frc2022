@@ -13,22 +13,33 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot {
+  public Robot(){
+    super(0.05);
+  }
+
   private double mag, mag2;
   private double seno, seno2;
   private int pov;    
   private double spd = 1;
   private double mL = 0,mR = 0;
+  private double mE = 0;
   private double x1,y1,x2,y2;
   private boolean analogic1, analogic2;
-  private double rt, lt;
+  private double rt, lt, rt2, lt2;
+  private double xS = 0,yS = 0;
+
+  private double i = 0;
 
   VictorSPX m_direita1 = new VictorSPX(1);
   VictorSPX m_direita2 = new VictorSPX(2);
   VictorSPX m_esquerda1 = new VictorSPX(3);
   VictorSPX m_esquerda2 = new VictorSPX(4);
 
+  VictorSPX m_escalada = new VictorSPX(5);
+  VictorSPX m_inclinacao = new VictorSPX(6);
   
   Joystick joystick1 = new Joystick(0);
+  Joystick joystick2 = new Joystick(1);
 
   
 
@@ -54,6 +65,9 @@ public class Robot extends TimedRobot {
     rt = joystick1.getRawAxis(3);
     lt = - joystick1.getRawAxis(2);
 
+    rt2 = joystick2.getRawAxis(3);
+    lt2 = joystick2.getRawAxis(2);
+
     // Calculo das magnitudes
     mag = Math.hypot(x1, y1);
     mag2 = Math.hypot(x2, y2);
@@ -66,7 +80,13 @@ public class Robot extends TimedRobot {
     // Reiniciação dos valores insignificantes
     resetAxis();
     // Calculo do POV
-    povCalc(pov);
+    povCalc(pov); 
+
+    escalada(rt2,lt2);
+
+      //m_escalada.set(ControlMode.PercentOutput, mE);
+      //m_esquerda1.set(ControlMode.PercentOutput, mL);
+      //m_direita1.set(ControlMode.PercentOutput, - mR);
       
       // Exibição dos valores na simulação
       SmartDashboard.putNumber("Velocidade", spd);
@@ -78,6 +98,14 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Trigger Direito", rt);
       SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
       SmartDashboard.putString("Trigger ativo", triggerGate(lt,rt));
+
+      SmartDashboard.putNumber("Trigger Direito 2", rt2);
+      SmartDashboard.putNumber("Trigger Esquerdo 2", lt2);
+      SmartDashboard.putNumber("Valor de I", i);
+      SmartDashboard.putNumber("Motor Escalada", mE);
+
+
+      simulationPosition();
 
   }
 
@@ -169,8 +197,7 @@ public class Robot extends TimedRobot {
   }
 
   
-//  m_esquerda1.set(ControlMode.PercentOutput, mL);
-//  m_direita1.set(ControlMode.PercentOutput, - mR);
+
 }
 
   public void povCalc(int pov){
@@ -270,7 +297,7 @@ public class Robot extends TimedRobot {
     
     if (x)
       spd = 1;
-
+      
     else if(a)
       spd = 0.5;
 
@@ -280,12 +307,39 @@ public class Robot extends TimedRobot {
       return spd;
   }
 
-  private double minMethod(double motor){
+  private double minMethod(double a){
 
-    if(Math.abs(motor) < 0.04) return 0;
+    if(Math.abs(a) < 0.04) return 0;
 
-    else return motor;
+    else return a;
     
     }
 
+  public void simulationPosition(){
+    resetAxis();
+    xS += x1;
+    yS += y1;
+    SmartDashboard.putNumber("Posição X", xS * 0.01);
+    SmartDashboard.putNumber("Posição Y", yS * 0.01);
   }
+
+  private double escalada(double rt, double lt){
+
+  if(rt > 0){
+    mE = 1;
+    i++;
+    if(i >= 60){
+      i = 60;
+      mE = 0;
+    }
+  }else if(lt > 0 && i > 0){
+    mE = -1;
+    i--;
+  }else if(i < 0){
+    i = 0;
+  }else{
+    mE =0;
+  }
+    return mE;
+  }
+}
