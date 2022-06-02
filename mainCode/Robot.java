@@ -81,7 +81,7 @@ public class Robot extends TimedRobot {
 
   }
 
-  private String analogicGate(boolean a, boolean b){
+  private String analogicGate(boolean a, boolean b) {
     
     if(a) return "Esquerdo"; // Verificação do uso do analogico esquerdo
 
@@ -126,6 +126,8 @@ public class Robot extends TimedRobot {
   }
 
   public void triggerCalc(double rt,double lt,double x){
+   if(Math.abs(x) < 0.04) x = 0;
+
     if(rt != 0){
       if(x >= 0){
         mL = rt * spd;
@@ -139,9 +141,10 @@ public class Robot extends TimedRobot {
         mL = lt * (1 - x) * spd;
         mR = lt * spd;
       }else if(x < 0){
-        mL = lt * (1 + x) * spd;
-        mR = lt * spd;
+        mL = lt * spd;
+        mR = lt * (1 + x) * spd;
       }
+
     }
   }
 
