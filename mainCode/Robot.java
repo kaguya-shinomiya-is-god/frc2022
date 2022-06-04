@@ -104,9 +104,6 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Valor de I", i);
       SmartDashboard.putNumber("Motor Escalada", mE);
 
-
-      simulationPosition();
-
   }
 
   private String analogicGate(boolean a, boolean b) {
@@ -315,28 +312,24 @@ public class Robot extends TimedRobot {
     
     }
 
-  public void simulationPosition(){
-    resetAxis();
-    xS += x1;
-    yS += y1;
-    SmartDashboard.putNumber("Posição X", xS * 0.01);
-    SmartDashboard.putNumber("Posição Y", yS * 0.01);
-  }
-
   private double escalada(double rt, double lt){
-
+    //Verificação do uso do RT
   if(rt > 0){
     mE = 1;
     i++;
+      //Vericação do limite do RT
     if(i >= 60){
       i = 60;
       mE = 0;
     }
-  }else if(lt > 0 && i > 0){
-    mE = -1;
-    i--;
-  }else if(i < 0){
-    i = 0;
+      //Verificação do uso do LT e do valor total do limite
+    }else if(lt > 0 && i > 0){
+      mE = -1;
+      i--;
+      // VEriciação do limite do LT  
+    }else if(i < 0){
+      i = 0;
+      //Verificação para caso de inutilidade dos TRIGGERS
   }else{
     mE =0;
   }
