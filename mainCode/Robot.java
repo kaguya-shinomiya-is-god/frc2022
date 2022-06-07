@@ -19,16 +19,16 @@ public class Robot extends TimedRobot {
 
   private double mag, mag2;
   private double seno, seno2;
-  private int pov;    
+  private int pov, pov2;    
   private double spd = 1;
   private double mL = 0,mR = 0;
-  private double mE = 0;
+  private double mE = 0, mA = 0;
   private double x1,y1,x2,y2;
   private boolean analogic1, analogic2;
   private double rt, lt, rt2, lt2;
-  private double xS = 0,yS = 0;
+  private boolean a,b,x,bY2;
 
-  private double i = 0;
+  private double i = 0, j = 0;
 
   VictorSPX m_direita1 = new VictorSPX(1);
   VictorSPX m_direita2 = new VictorSPX(2);
@@ -36,7 +36,7 @@ public class Robot extends TimedRobot {
   VictorSPX m_esquerda2 = new VictorSPX(4);
 
   VictorSPX m_escalada = new VictorSPX(5);
-  VictorSPX m_inclinacao = new VictorSPX(6);
+  VictorSPX m_angulo = new VictorSPX(6);
   
   Joystick joystick1 = new Joystick(0);
   Joystick joystick2 = new Joystick(1);
@@ -64,31 +64,53 @@ public class Robot extends TimedRobot {
     pov = joystick1.getPOV();
     rt = joystick1.getRawAxis(3);
     lt = - joystick1.getRawAxis(2);
+    a = joystick1.getRawButton(1);
+    b = joystick1.getRawButton(2); 
+    x = joystick1.getRawButton(2);
 
     rt2 = joystick2.getRawAxis(3);
     lt2 = joystick2.getRawAxis(2);
+    bY2 = joystick2.getRawButton(4);
+    pov2 = joystick2.getPOV();
 
     // Calculo das magnitudes
     mag = Math.hypot(x1, y1);
     mag2 = Math.hypot(x2, y2);
 
     // Verificação do uso de botões
-    buttonSe(joystick1.getRawButton(3), joystick1.getRawButton(1), joystick1.getRawButton(2));
-    // Verificação dos analogicos e triggers
+    buttonSe(x,a,b);
+    // Verificação dos analogicos
     movementCalc();
+    // Calculo dos triggers
     triggerCalc(rt,lt,x1);
     // Reiniciação dos valores insignificantes
     resetAxis();
     // Calculo do POV
     povCalc(pov); 
-
+    // Inicialização da escalada
     escalada(rt2,lt2);
+    angulo(pov2);
+
+    if(bY2){
+      mL = 0;
+      mR = 0;
+      spd = 0;
+      pov = -1;
+    }
 
       //m_escalada.set(ControlMode.PercentOutput, mE);
+      //m_angulo.set(ControlMode.PercentOutput, mA);
       //m_esquerda1.set(ControlMode.PercentOutput, mL);
       //m_direita1.set(ControlMode.PercentOutput, - mR);
       
       // Exibição dos valores na simulação
+      smartDashboardF();
+
+  }
+
+  private void smartDashboardF() {
+
+      // Movimentação
       SmartDashboard.putNumber("Velocidade", spd);
       SmartDashboard.putNumber("ForcaMotor Esquerdo", mL);
       SmartDashboard.putNumber("ForçaMotor Direito", mR);
@@ -99,11 +121,13 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
       SmartDashboard.putString("Trigger ativo", triggerGate(lt,rt));
 
+      // Escalada
       SmartDashboard.putNumber("Trigger Direito 2", rt2);
       SmartDashboard.putNumber("Trigger Esquerdo 2", lt2);
       SmartDashboard.putNumber("Valor de I", i);
+      SmartDashboard.putNumber("Valor de J", j);
       SmartDashboard.putNumber("Motor Escalada", mE);
-
+      SmartDashboard.putNumber("Motor Angulação", mA);
   }
 
   private String analogicGate(boolean a, boolean b) {
@@ -313,26 +337,42 @@ public class Robot extends TimedRobot {
     }
 
   private double escalada(double rt, double lt){
-    //Verificação do uso do RT
+
   if(rt > 0){
     mE = 1;
     i++;
-      //Vericação do limite do RT
     if(i >= 60){
       i = 60;
       mE = 0;
     }
-      //Verificação do uso do LT e do valor total do limite
-    }else if(lt > 0 && i > 0){
-      mE = -1;
-      i--;
-      // VEriciação do limite do LT  
-    }else if(i < 0){
-      i = 0;
-      //Verificação para caso de inutilidade dos TRIGGERS
+  }else if(lt > 0 && i > 0){
+    mE = -1;
+    i--;
+  }else if(i < 0){
+    i = 0;
   }else{
     mE =0;
   }
     return mE;
   }
+
+  private double angulo(int pov){
+
+    if(pov == 0){
+      mA = 1;
+      j++;
+      if(j >= 60){
+        j = 60;
+        mA = 0;
+      }
+    }else if(pov == 180 && j > 0){
+      mA = -1;
+      j--;
+    }else if(j < 0){
+      j = 0;
+    }else{
+      mA = 0;
+    }
+      return mA;
+    }
 }
