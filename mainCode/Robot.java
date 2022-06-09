@@ -26,7 +26,8 @@ public class Robot extends TimedRobot {
   private double x1,y1,x2,y2;
   private boolean analogic1, analogic2;
   private double rt, lt, rt2, lt2;
-  private boolean a,b,x,bY2;
+  private boolean a,b,x;
+  private boolean a2,b2,buttonX2;
 
   private double i = 0, j = 0;
 
@@ -67,10 +68,12 @@ public class Robot extends TimedRobot {
     a = joystick1.getRawButton(1);
     b = joystick1.getRawButton(2); 
     x = joystick1.getRawButton(2);
+    a2 = joystick2.getRawButton(1);
+    b2 = joystick2.getRawButton(2); 
+    buttonX2 = joystick2.getRawButton(2);
 
     rt2 = joystick2.getRawAxis(3);
     lt2 = joystick2.getRawAxis(2);
-    bY2 = joystick2.getRawButton(4);
     pov2 = joystick2.getPOV();
 
     // Calculo das magnitudes
@@ -90,14 +93,6 @@ public class Robot extends TimedRobot {
     // Inicialização da escalada
     escalada(rt2,lt2);
     angulo(pov2);
-
-    if(bY2){
-      mL = 0;
-      mR = 0;
-      spd = 0;
-      pov = -1;
-    }
-
       //m_escalada.set(ControlMode.PercentOutput, mE);
       //m_angulo.set(ControlMode.PercentOutput, mA);
       //m_esquerda1.set(ControlMode.PercentOutput, mL);
@@ -111,7 +106,6 @@ public class Robot extends TimedRobot {
   private void smartDashboardF() {
 
       // Movimentação
-      SmartDashboard.putNumber("Velocidade", spd);
       SmartDashboard.putNumber("ForcaMotor Esquerdo", mL);
       SmartDashboard.putNumber("ForçaMotor Direito", mR);
       SmartDashboard.putNumber("Magnitude Esquerda", mag);
@@ -325,6 +319,8 @@ public class Robot extends TimedRobot {
     else if(b)
       spd = 0.25;
 
+      SmartDashboard.putNumber("Velocidade", spd);
+
       return spd;
   }
 
@@ -337,23 +333,24 @@ public class Robot extends TimedRobot {
     }
 
   private double escalada(double rt, double lt){
-
-  if(rt > 0){
-    mE = 1;
-    i++;
-    if(i >= 60){
-      i = 60;
-      mE = 0;
+    spd = buttonSe(buttonX2,a2,b2);
+    if(rt > 0){
+      mE = 1;
+      i = i + 1 * spd;
+      if(i >= 60){
+        i = 60;
+        mE = 0;
+      }
+    }else if(lt > 0 && i > 0){
+      mE = -1;
+      i = i - 1 * spd;
+    }else if(i < 0){
+      i = 0;
+    }else{
+      mE =0;
     }
-  }else if(lt > 0 && i > 0){
-    mE = -1;
-    i--;
-  }else if(i < 0){
-    i = 0;
-  }else{
-    mE =0;
-  }
-    return mE;
+    
+    return mE * spd;
   }
 
   private double angulo(int pov){
