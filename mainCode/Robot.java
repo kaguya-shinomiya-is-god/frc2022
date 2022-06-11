@@ -7,7 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 
-//import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.ControlMode;
 //import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +28,8 @@ public class Robot extends TimedRobot {
   private double rt, lt, rt2, lt2;
   private boolean a,b,x;
   private boolean a2,b2,buttonX2;
+  private boolean buttonY2, l = false;
+  private boolean ltB,rtB;
 
   private double i = 0, j = 0;
 
@@ -71,6 +73,9 @@ public class Robot extends TimedRobot {
     a2 = joystick2.getRawButton(1);
     b2 = joystick2.getRawButton(2); 
     buttonX2 = joystick2.getRawButton(2);
+    buttonY2 = joystick2.getRawButton(4);
+    
+    if(buttonY2) l = !l;
 
     rt2 = joystick2.getRawAxis(3);
     lt2 = joystick2.getRawAxis(2);
@@ -93,10 +98,12 @@ public class Robot extends TimedRobot {
     // Inicialização da escalada
     escalada(rt2,lt2);
     angulo(pov2);
-      //m_escalada.set(ControlMode.PercentOutput, mE);
-      //m_angulo.set(ControlMode.PercentOutput, mA);
-      //m_esquerda1.set(ControlMode.PercentOutput, mL);
-      //m_direita1.set(ControlMode.PercentOutput, - mR);
+    
+    lockMotors(l);
+      m_escalada.set(ControlMode.PercentOutput, mE);
+      m_angulo.set(ControlMode.PercentOutput, mA);
+      m_esquerda1.set(ControlMode.PercentOutput, mL);
+      m_direita1.set(ControlMode.PercentOutput, - mR);
       
       // Exibição dos valores na simulação
       smartDashboardF();
@@ -113,7 +120,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Trigger Esquerdo", -lt);
       SmartDashboard.putNumber("Trigger Direito", rt);
       SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
-      SmartDashboard.putString("Trigger ativo", triggerGate(lt,rt));
+      SmartDashboard.putString("Trigger ativo", analogicGate(ltB,rtB));
 
       // Escalada
       SmartDashboard.putNumber("Trigger Direito 2", rt2);
@@ -126,23 +133,12 @@ public class Robot extends TimedRobot {
 
   private String analogicGate(boolean a, boolean b) {
     
-    if(a) return "Esquerdo"; // Verificação do uso do analogico esquerdo
+    if(a) return "Esquerdo"; // Verificação do uso do componente esquerdo
 
-    else if(b) return "Direito"; // Verificação do uso do analogico direito
+    else if(b) return "Direito"; // Verificação do uso do componente direito
 
-    else return "Nenhum"; // Verificação da inutilização dos dois lados
+    else return "Nenhum"; // Verificação da inutilização dos dois componentes
 
-  }
-
-  private String triggerGate(double a,double b){
-
-    if(a != 0 && b != 0) return "Ambos";
-
-    else if(a != 0) return "Esquerda";
-
-    else if(b != 0) return "Direita";
-
-    else return "Nenhuma";
   }
 
   
@@ -169,9 +165,11 @@ public class Robot extends TimedRobot {
   }
 
   public void triggerCalc(double rt,double lt,double x){
-   if(Math.abs(x) < 0.04) x = 0;
+    if(Math.abs(x) < 0.04) x = 0;
 
     if(rt != 0){
+        rtB = true;
+        ltB = false;
       if(x >= 0){
         mL = rt * spd;
         mR = rt * (1 - x) * spd;
@@ -180,6 +178,8 @@ public class Robot extends TimedRobot {
         mR = rt *spd;
       }
     }else if(lt != 0){
+      ltB = true;
+      rtB = false;
       if(x >= 0){
         mL = lt * (1 - x) * spd;
         mR = lt * spd;
@@ -331,6 +331,13 @@ public class Robot extends TimedRobot {
     else return a;
     
     }
+
+  private void lockMotors(boolean y){
+    if(y){
+      mR = 0;
+      mL = 0;
+    }
+  }
 
   private double escalada(double rt, double lt){
     spd = buttonSe(buttonX2,a2,b2);
