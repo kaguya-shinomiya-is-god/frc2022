@@ -106,13 +106,13 @@ public class Robot extends TimedRobot {
       m_direita1.set(ControlMode.PercentOutput, - mR);
       
       // Exibição dos valores na simulação
-      smartDashboardF();
+      SmartDashboardF();
 
   }
 
-  private void smartDashboardF() {
+  private void SmartDashboardF() {
 
-      // Movimentação
+      //Movimentação
       SmartDashboard.putNumber("ForcaMotor Esquerdo", mL);
       SmartDashboard.putNumber("ForçaMotor Direito", mR);
       SmartDashboard.putNumber("Magnitude Esquerda", mag);
@@ -122,13 +122,13 @@ public class Robot extends TimedRobot {
       SmartDashboard.putString("Analogico ativo",analogicGate(analogic1,analogic2));
       SmartDashboard.putString("Trigger ativo", analogicGate(ltB,rtB));
 
-      // Escalada
+      //Escalada
       SmartDashboard.putNumber("Trigger Direito 2", rt2);
       SmartDashboard.putNumber("Trigger Esquerdo 2", lt2);
       SmartDashboard.putNumber("Valor de I", i);
       SmartDashboard.putNumber("Valor de J", j);
       SmartDashboard.putNumber("Motor Escalada", mE);
-      SmartDashboard.putNumber("Motor Angulação", mA);
+      SmartDashboard.putNumber("Motor Angulacao", mA);
   }
 
   private String analogicGate(boolean a, boolean b) {
@@ -140,8 +140,6 @@ public class Robot extends TimedRobot {
     else return "Nenhum"; // Verificação da inutilização dos dois componentes
 
   }
-
-  
 
   private void resetAxis() {
 
@@ -210,9 +208,6 @@ public class Robot extends TimedRobot {
       mR = seno * mag * spd; // Varia
       mL = -mag * spd; // Constante
   }
-
-  
-
 }
 
   public void povCalc(int pov){
@@ -340,17 +335,19 @@ public class Robot extends TimedRobot {
   }
 
   private double escalada(double rt, double lt){
+
     spd = buttonSe(buttonX2,a2,b2);
+
     if(rt > 0){
       mE = 1;
-      i = i + 1 * spd;
+      i = i + spd;
       if(i >= 60){
         i = 60;
         mE = 0;
       }
     }else if(lt > 0 && i > 0){
       mE = -1;
-      i = i - 1 * spd;
+      i = i - spd;
     }else if(i < 0){
       i = 0;
     }else{
