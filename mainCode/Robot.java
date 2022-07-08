@@ -193,19 +193,19 @@ public class Robot extends TimedRobot {
       seno = y / mag;
       // Quadrante 1  
     if(y >= 0 && x >= 0){
-      mR = seno * mag * spd; // Varia
+      mR = (2 * seno - 1) * mag * spd; // Varia
       mL = mag * spd; // Constante
       // Quadrante 2
     }else if(y >= 0 && x <= 0){
       mR = mag * spd; // Constante
-      mL = seno * mag * spd; // Varia
+      mL = (2 * seno - 1) * mag * spd; // Varia
       // Quadrante 3
     }else if(y < 0 && x < 0){
       mR = -mag * spd; // Constante
-      mL = seno * mag * spd; // Varia
+      mL = (2 * seno + 1) * mag * spd; // Varia
       // Quadrante 4
     }else if(y < 0 && x >= 0){
-      mR = seno * mag * spd; // Varia
+      mR = (2 * seno + 1) * mag * spd; // Varia
       mL = -mag * spd; // Constante
   }
 }
@@ -287,18 +287,18 @@ public class Robot extends TimedRobot {
         // Quadrante 1  
       if(y2 >= 0 && x2 >= 0){
         mR = - mag2 * spd;
-        mL = - seno2 * mag2 * spd;
+        mL = - (2 * seno2 + 1) * mag2 * spd;
         // Quadrante 2
       }else if(y2 >= 0 && x2 < 0){
-        mR = - seno2 * mag2 * spd;
+        mR = - (2 * seno + 1) * mag2 * spd;
         mL = - mag2 * spd;
         // Quadrante 3
       }else if(y2 < 0 && x2 < 0){
         mR = mag2 * spd;
-        mL = - seno2 * mag2 * spd;
+        mL = - (2 * seno - 1) * mag2 * spd;
         // Quadrante 4
       }else if(y2 < 0 && x2 >= 0){
-        mR = - seno2 * mag2 * spd;
+        mR = - (2 * seno + 1) * mag2 * spd;
         mL = mag2 * spd;
       }
   }
